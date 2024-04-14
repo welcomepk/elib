@@ -4,9 +4,10 @@ conf()
 
 const _config = {
     port: process.env.PORT,
-    dbConnectionUrl: process.env.MONGO_CONN_STRING
+    dbConnectionUrl: process.env.MONGO_CONN_STRING,
+    env: process.env.NODE_ENV
 }
 
-console.log(_config.port);
+
 
 export const config = Object.freeze(_config)    
