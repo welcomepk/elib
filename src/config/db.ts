@@ -12,7 +12,7 @@ const connectDB = async () => {
             console.error('Error in MongoDB', err);
         })
         
-        await mongoose.connect(config.dbConnectionUrl as string)
+        await mongoose.connect(`${config.dbConnectionUrl}/elib` as string)
         
         
 
