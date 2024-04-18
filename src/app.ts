@@ -4,6 +4,7 @@ import createHttpError, { HttpError } from 'http-errors'
 import { config } from './config/config'
 import globalErrorHandler from './middlewares/globalErrorHandler'
 import userRouter from './user/userRouter'
+import bookRouter from './book/bookRouter'
 
 const app = express()
 
@@ -18,6 +19,7 @@ app.get('/', (req, res, next) => {
 
 // Routes
 app.use('/api/users', userRouter)
+app.use('/api/books', bookRouter)
 
 // express provides global error handler middleware, which should be at last
 app.use(globalErrorHandler)
