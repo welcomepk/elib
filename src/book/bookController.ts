@@ -1,10 +1,18 @@
 import { Request, Response, NextFunction } from "express"
 import { Book } from "./bookTypes"
+import fs from 'fs'
 import BookModel from "./bookModel"
 import cloudinary from "../config/cloudinary"
 import createHttpError from "http-errors"
 
 export const createBook = async (req: Request, res: Response, next: NextFunction) => {
+
+    const { title, author, genre } = req.body as { title: string, author: string, genre: string }
+    const { coverImage, file } = req.files as { coverImage: Express.Multer.File[], file: Express.Multer.File[] }
+
+    if (!title || !author || !genre || !coverImage || !file) {
+        return next(createHttpError(400, 'All fields are required.'))
+    }
 
     const files = req.files as { [fieldname: string]: Express.Multer.File[] }
 
@@ -43,15 +51,16 @@ export const createBook = async (req: Request, res: Response, next: NextFunction
         return next(error)
     }
 
-
-
     // create a new book
     try {
         const newBook = await BookModel.create({
             ...req.body,
-            coverImage: bookCoverImageuploadResult.url,
-            file: bookFileUploadResult.url,
+            coverImage: bookCoverImageuploadResult.secure_url,
+            file: bookFileUploadResult.secure_url,
         })
+        await fs.promises.unlink(files.coverImage[0].path)
+        await fs.promises.unlink(files.file[0].path)
+
         return res.send({
             book: newBook,
         })
