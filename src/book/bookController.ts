@@ -5,6 +5,7 @@ import BookModel from "./bookModel"
 import cloudinary from "../config/cloudinary"
 import createHttpError from "http-errors"
 import { AuthRequest } from "../middlewares/auth"
+import bookModel from "./bookModel"
 
 export const createBook = async (req: Request, res: Response, next: NextFunction) => {
 
@@ -75,4 +76,83 @@ export const createBook = async (req: Request, res: Response, next: NextFunction
         return next(error)
     }
 
+}
+
+export const updateBook = async (req: Request, res: Response, next: NextFunction) => {
+
+    const { coverImage, file } = req.files as { coverImage: Express.Multer.File[], file: Express.Multer.File[] } || { coverImage: "", file: "" }
+    const { title, genre } = req.body;
+    const bookId = req.params.bookId;
+
+    const book = await bookModel.findOne({ _id: bookId })
+    if (!book) {
+        return next(createHttpError(404, "Book not found"));
+    }
+    console.log("testts");
+
+    const _req = req as AuthRequest
+    if (book.author.toString() !== _req.userId) {
+        return next(createHttpError(403, "Unauthorized to modify this resource."));
+    }
+
+    let completeFile = ''
+    let completeCoverImage = ""
+    try {
+        if (coverImage) {
+            const coverImageMimeType = coverImage[0].mimetype.split('/').at(-1)
+            const filePath = coverImage[0].path
+            const filename = `${coverImage[0].filename}.${coverImageMimeType}`
+
+            const uploadResult = await cloudinary.uploader.upload(filePath, {
+                filename_override: filename,
+                folder: 'book-covers',
+                format: coverImageMimeType,
+            })
+            completeCoverImage = uploadResult.secure_url
+            await fs.promises.unlink(filePath)
+        }
+
+        if (file) {
+            const fileMimeType = file[0].mimetype.split('/').at(-1)
+            const filePath = file[0].path
+            const filename = `${file[0].filename}.${fileMimeType}`
+
+            const uploadResult = await cloudinary.uploader.upload(filePath, {
+                resource_type: 'raw',
+                filename_override: filename,
+                folder: 'book-pdfs',
+                format: fileMimeType,
+            })
+            completeFile = uploadResult.secure_url
+            await fs.promises.unlink(filePath)
+        }
+    } catch (error) {
+        return next(error)
+    }
+
+    try {
+        const updatedBook = await bookModel.findByIdAndUpdate(bookId, {
+            title,
+            genre,
+            coverImage: completeCoverImage || book.coverImage,
+            file: completeFile || book.file,
+        }, { new: true })
+        return res.send(updatedBook)
+    } catch (error) {
+        return next(error)
+    }
+
+
+}
+
+export const getAllBooks = async (req: Request, res: Response, next: NextFunction) => {
+
+    try {
+        const books = await bookModel.find({})
+        return res.send({
+            books
+        })
+    } catch (error) {
+        return next(error)
+    }
 }

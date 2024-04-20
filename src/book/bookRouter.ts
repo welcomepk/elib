@@ -2,7 +2,7 @@ import express from 'express'
 import path from 'node:path'
 import multer from 'multer'
 import auth from '../middlewares/auth';
-import { createBook } from './bookController';
+import { createBook, getAllBooks, updateBook } from './bookController';
 
 // store to local => then uploads to cloud
 const upload = multer({
@@ -14,12 +14,24 @@ const upload = multer({
 
 const bookRouter = express.Router();
 
+bookRouter.get('/', getAllBooks)
+
 bookRouter.post('/',
     upload.fields([
         { name: 'coverImage', maxCount: 1 },
         { name: 'file', maxCount: 1 },
     ]),
     auth,
-    createBook)
+    createBook
+)
+
+bookRouter.patch('/:bookId',
+    upload.fields([
+        { name: 'coverImage', maxCount: 1 },
+        { name: 'file', maxCount: 1 },
+    ]),
+    auth,
+    updateBook
+)
 
 export default bookRouter;
