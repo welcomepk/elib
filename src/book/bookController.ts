@@ -156,3 +156,15 @@ export const getAllBooks = async (req: Request, res: Response, next: NextFunctio
         return next(error)
     }
 }
+
+export const getBookDetails = async (req: Request, res: Response, next: NextFunction) => {
+    const bookId = req.params.bookId
+    try {
+        const book = await bookModel.findById(bookId)
+        return res.send({
+            book
+        })
+    } catch (error) {
+        return next(error)
+    }
+}
