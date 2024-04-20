@@ -1,7 +1,7 @@
 import express from 'express'
 import path from 'node:path'
 import multer from 'multer'
-
+import auth from '../middlewares/auth';
 import { createBook } from './bookController';
 
 // store to local => then uploads to cloud
@@ -19,6 +19,7 @@ bookRouter.post('/',
         { name: 'coverImage', maxCount: 1 },
         { name: 'file', maxCount: 1 },
     ]),
+    auth,
     createBook)
 
 export default bookRouter;

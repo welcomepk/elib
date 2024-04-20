@@ -4,13 +4,18 @@ import fs from 'fs'
 import BookModel from "./bookModel"
 import cloudinary from "../config/cloudinary"
 import createHttpError from "http-errors"
+import { AuthRequest } from "../middlewares/auth"
 
 export const createBook = async (req: Request, res: Response, next: NextFunction) => {
 
-    const { title, author, genre } = req.body as { title: string, author: string, genre: string }
+    const _req = req as AuthRequest
+
+    const { title, genre } = req.body as { title: string, author: string, genre: string }
     const { coverImage, file } = req.files as { coverImage: Express.Multer.File[], file: Express.Multer.File[] }
 
-    if (!title || !author || !genre || !coverImage || !file) {
+    console.log(coverImage, file);
+
+    if (!title || !genre || !coverImage || !file) {
         return next(createHttpError(400, 'All fields are required.'))
     }
 
@@ -18,8 +23,8 @@ export const createBook = async (req: Request, res: Response, next: NextFunction
 
     const fileSise = parseFloat(((files.file[0].size) / (1024 * 1024)).toFixed(2));
 
-    if (fileSise > 30) {
-        return next(createHttpError(400, 'File size should be less than of 30mb.'))
+    if (fileSise > 10) {
+        return next(createHttpError(400, 'File size should be less than of 10mb.'))
     }
 
     let bookCoverImageuploadResult;
@@ -55,6 +60,7 @@ export const createBook = async (req: Request, res: Response, next: NextFunction
     try {
         const newBook = await BookModel.create({
             ...req.body,
+            author: _req.userId,
             coverImage: bookCoverImageuploadResult.secure_url,
             file: bookFileUploadResult.secure_url,
         })
