@@ -145,6 +145,42 @@ export const updateBook = async (req: Request, res: Response, next: NextFunction
 
 }
 
+export const deleteBook = async (req: Request, res: Response, next: NextFunction) => {
+    const bookId = req.params.bookId
+    const _req = req as AuthRequest
+    try {
+        // delete cloudinary images
+        const book = await bookModel.findById(bookId)
+        if (!book) {
+            return next(createHttpError(404, 'Book not found'))
+        }
+        if (book.author.toString() !== _req.userId) {
+            return next(createHttpError(403, 'Unauthorized to delete this resource'))
+        }
+
+        // https://res.cloudinary.com/dfcm5xrlw/image/upload/v1713593670/book-covers/jwbs1bvdtby1q754bksn.jpg
+        const coverFileSplits = book.coverImage.split("/");
+        const coverImagePublicId = coverFileSplits.at(-2) + "/" + coverFileSplits.at(-1)?.split(".").at(-2);
+
+        const bookFileSplits = book.file.split("/");
+        const bookFilePublicId = bookFileSplits.at(-2) + "/" + bookFileSplits.at(-1);
+
+        try {
+            await cloudinary.uploader.destroy(coverImagePublicId)
+            await cloudinary.uploader.destroy(bookFilePublicId, {
+                resource_type: 'raw'
+            })
+
+        } catch (error) {
+            return next(error)
+        }
+
+        await bookModel.findByIdAndDelete(bookId)
+        return res.status(204).send({ message: "book deleted" })
+    } catch (error) {
+        return next(error)
+    }
+}
 export const getAllBooks = async (req: Request, res: Response, next: NextFunction) => {
 
     try {
