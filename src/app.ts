@@ -1,4 +1,5 @@
 import express from 'express'
+import cors from 'cors'
 import globalErrorHandler from './middlewares/globalErrorHandler'
 import userRouter from './user/userRouter'
 import bookRouter from './book/bookRouter'
@@ -6,7 +7,9 @@ import bookRouter from './book/bookRouter'
 const app = express()
 
 app.use(express.json())
-
+app.use(cors({
+    origin: 'http://localhost:5173'
+}))
 
 
 
