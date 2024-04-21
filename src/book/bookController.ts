@@ -184,7 +184,7 @@ export const deleteBook = async (req: Request, res: Response, next: NextFunction
 export const getAllBooks = async (req: Request, res: Response, next: NextFunction) => {
 
     try {
-        const books = await bookModel.find({})
+        const books = await bookModel.find({}).populate('author', 'name email')
         return res.send({
             books
         })
@@ -196,7 +196,7 @@ export const getAllBooks = async (req: Request, res: Response, next: NextFunctio
 export const getBookDetails = async (req: Request, res: Response, next: NextFunction) => {
     const bookId = req.params.bookId
     try {
-        const book = await bookModel.findById(bookId)
+        const book = await bookModel.findById(bookId).populate('author', 'name email')
         if (!book) {
             return next(createHttpError(404, 'Book not found'))
         }
