@@ -185,9 +185,9 @@ export const getAllBooks = async (req: Request, res: Response, next: NextFunctio
 
     try {
         const books = await bookModel.find({}).populate('author', 'name email')
-        return res.send({
+        return res.send(
             books
-        })
+        )
     } catch (error) {
         return next(error)
     }
